@@ -2,7 +2,9 @@ function cardInit(
   cardTemplate,
   cardInfo,
   cardDelete,
-  openImagePopup,
+  openPopup,
+  openImagePopupHandler,
+  popupImageFullView,
   cardLike
 ) {
   const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
@@ -18,7 +20,9 @@ function cardInit(
 
   cardElement
     .querySelector(".card__image")
-    .addEventListener("click", () => openImagePopup(cardInfo));
+    .addEventListener("click", () =>
+      openImagePopupHandler(cardInfo, popupImageFullView, openPopup)
+    );
 
   cardElement.addEventListener("click", cardLike);
 
@@ -35,4 +39,12 @@ function cardLike(el) {
   }
 }
 
-export { cardInit, cardDelete, cardLike };
+function openImagePopupHandler(cardInfo, popupElement, openPopup) {
+  const popupImage = popupElement.querySelector(".popup__image");
+  popupImage.src = cardInfo.link;
+  popupImage.alt = cardInfo.name;
+  popupElement.querySelector(".popup__caption").textContent = cardInfo.name;
+  openPopup(popupElement);
+}
+
+export { cardInit, cardDelete, cardLike, openImagePopupHandler};

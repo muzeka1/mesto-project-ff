@@ -1,20 +1,9 @@
-// @todo: Темплейт карточки
-
-// @todo: DOM узлы
-
-// @todo: Функция создания карточки
-
-// @todo: Функция удаления карточки
-
-// @todo: Вывести карточки на страницу
-
-import "../index.css"; // добавьте импорт главного файла стилей
+import "../index.css"; 
 import { initialCards } from "./cards.js";
 import {
   cardInit,
   cardDelete,
   cardLike,
-  openImagePopupHandler,
 } from "./card.js";
 import { closePopup, openPopup, closePopupOverlay } from "./modal.js";
 
@@ -25,7 +14,6 @@ const closePopupButtonList = document.querySelectorAll(".popup__close");
 const editProfileButton = document.querySelector(".profile__edit-button");
 const popupEditProfile = document.querySelector(".popup_type_edit");
 const popupAddImage = document.querySelector(".popup_type_new-card");
-const popupImageFullView = document.querySelector(".popup_type_image");
 const allPopups = document.querySelectorAll(".popup");
 const editProfileForm = document.forms["edit-profile"];
 const nameInput = editProfileForm.elements["name"];
@@ -33,6 +21,9 @@ const descriptionInput = editProfileForm.elements["description"];
 const profileName = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
 const newPlaceForm = document.forms["new-place"];
+const popupImageFullView = document.querySelector(".popup_type_image");
+const imagePopupFullView = document.querySelector(".popup__image");
+const captionPopupFullView = document.querySelector(".popup__caption")
 
 function editProfileSubmit(formElement) {
   formElement.preventDefault();
@@ -52,14 +43,19 @@ function addCardSubmit(formElement) {
       cardTemplate,
       cardInputInfo,
       cardDelete,
-      openPopup,
       openImagePopupHandler,
-      popupImageFullView,
       cardLike
     )
   );
   newPlaceForm.reset();
   closePopup(popupAddImage);
+}
+
+function openImagePopupHandler(cardInfo) {
+  imagePopupFullView.src = cardInfo.link;
+  imagePopupFullView.alt = cardInfo.name;
+  captionPopupFullView.textContent = cardInfo.name;
+  openPopup(popupImageFullView);
 }
 
 initialCards.forEach((cardInfo) => {
@@ -68,9 +64,7 @@ initialCards.forEach((cardInfo) => {
       cardTemplate,
       cardInfo,
       cardDelete,
-      openPopup,
       openImagePopupHandler,
-      popupImageFullView,
       cardLike
     )
   );

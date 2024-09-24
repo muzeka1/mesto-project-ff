@@ -1,11 +1,14 @@
-import "../index.css"; 
-import { initialCards } from "./cards.js";
-import {
-  cardInit,
-  cardDelete,
-  cardLike,
-} from "./card.js";
+import "../index.css";
+import { cardInit, cardLike } from "./card.js";
 import { closePopup, openPopup, closePopupOverlay } from "./modal.js";
+import { enableValidation, clearValidation } from "./validation.js";
+import {
+  updateUserInfo,
+  postNewCard,
+  getKeyData,
+  updateUserLogoImage,
+  cardDeleteRequest,
+} from "./api.js";
 
 const cardTemplate = document.querySelector("#card-template").content;
 const cardsContainer = document.querySelector(".places__list");
@@ -23,32 +26,64 @@ const profileDescription = document.querySelector(".profile__description");
 const newPlaceForm = document.forms["new-place"];
 const popupImageFullView = document.querySelector(".popup_type_image");
 const imagePopupFullView = document.querySelector(".popup__image");
-const captionPopupFullView = document.querySelector(".popup__caption")
+const captionPopupFullView = document.querySelector(".popup__caption");
+const profileImage = document.querySelector(".profile__image");
+const popupEditProfileImage = document.querySelector(".popup_type_logo-url");
+const editProfileImageForm = document.forms["edit-profile-logo"];
+const logoInput = editProfileImageForm.elements["logo-link"];
+const popupErrorMessage = document.querySelector(".popup_type_error-message");
+const popupCardDelete = document.querySelector(".popup_type_card-delete");
+const deleteCardForm = document.forms["delete-card"];
+let cardIdToDelete = "";
+let cardElementToDelete;
 
 function editProfileSubmit(formElement) {
   formElement.preventDefault();
-  profileName.textContent = nameInput.value;
-  profileDescription.textContent = descriptionInput.value;
-  closePopup(popupEditProfile);
+  const buttonElement = formElement.target.querySelector(".popup__button");
+  popupButtonStateToggle(true, buttonElement);
+  updateUserInfo(nameInput.value, descriptionInput.value)
+    .then(() => {
+      profileName.textContent = nameInput.value;
+      profileDescription.textContent = descriptionInput.value;
+      closePopup(popupEditProfile);
+    })
+    .catch((errorMessage) => {
+      openPopupErrorMessage(errorMessage);
+    })
+    .finally(() => {
+      popupButtonStateToggle(false, buttonElement);
+    });
 }
 
-function addCardSubmit(formElement) {
+function addCardSubmit(formElement, userData) {
   formElement.preventDefault();
-  const cardInputInfo = {
-    name: newPlaceForm.elements["place-name"].value,
-    link: newPlaceForm.elements["link"].value,
-  };
-  cardsContainer.prepend(
-    cardInit(
-      cardTemplate,
-      cardInputInfo,
-      cardDelete,
-      openImagePopupHandler,
-      cardLike
-    )
-  );
+  const buttonElement = formElement.target.querySelector(".popup__button");
+  popupButtonStateToggle(true, buttonElement);
+  postNewCard(
+    newPlaceForm.elements["place-name"].value,
+    newPlaceForm.elements["link"].value
+  )
+    .then((cardInfo) => {
+      cardsContainer.prepend(
+        cardInit(
+          cardTemplate,
+          cardInfo,
+          openPopupDeleteCardHandler,
+          openImagePopupHandler,
+          cardLike,
+          userData
+        )
+      );
+    })
+    .catch((errorMessage) => {
+      openPopupErrorMessage(errorMessage);
+    })
+    .finally(() => {
+      popupButtonStateToggle(false, buttonElement);
+      closePopup(popupAddImage);
+    });
+
   newPlaceForm.reset();
-  closePopup(popupAddImage);
 }
 
 function openImagePopupHandler(cardInfo) {
@@ -58,19 +93,85 @@ function openImagePopupHandler(cardInfo) {
   openPopup(popupImageFullView);
 }
 
-initialCards.forEach((cardInfo) => {
-  cardsContainer.append(
-    cardInit(
-      cardTemplate,
-      cardInfo,
-      cardDelete,
-      openImagePopupHandler,
-      cardLike
-    )
+function openPopupDeleteCardHandler(cardId, cardElement) {
+  cardIdToDelete = cardId;
+  cardElementToDelete = cardElement;
+  openPopup(popupCardDelete);
+}
+
+function deleteCardSubmit(formElement, cardIdToDelete, cardElementToDelete) {
+  formElement.preventDefault();
+  const buttonElement = formElement.target.querySelector(".popup__button");
+  popupButtonStateToggle(true, buttonElement);
+  cardDeleteRequest(cardIdToDelete)
+    .then(() => {
+      cardElementToDelete.remove();
+    })
+    .catch((err) => {
+      openPopupErrorMessage(err);
+    })
+    .finally(() => {
+      popupButtonStateToggle(false, buttonElement);
+      closePopup(popupCardDelete);
+    });
+}
+
+function renderUserInfo(userInfo) {
+  profileName.textContent = userInfo.name;
+  profileDescription.textContent = userInfo.about;
+  profileImage.style.backgroundImage = `url(${userInfo.avatar})`;
+}
+
+function editProfileImageSubmit(formElement) {
+  formElement.preventDefault();
+  const buttonElement = formElement.target.querySelector(".popup__button");
+  popupButtonStateToggle(true, buttonElement);
+  updateUserLogoImage(logoInput.value)
+    .then((logoInfo) => {
+      profileImage.style.backgroundImage = `url(${logoInfo.avatar})`;
+      closePopup(popupEditProfileImage);
+    })
+    .catch((err) => {
+      openPopupErrorMessage(err);
+    })
+    .finally(() => {
+      popupButtonStateToggle(false, buttonElement);
+    });
+}
+
+function popupButtonStateToggle(isLoading, popupButton) {
+  if (isLoading) {
+    popupButton.textContent = popupButton.dataset.requestText;
+  } else {
+    popupButton.textContent = popupButton.dataset.defaultText;
+  }
+}
+
+function openPopupErrorMessage(errorMessage) {
+  popupErrorMessage.textContent = errorMessage;
+  popupErrorMessage.classList.add("popup_type_error-message-active");
+  setTimeout(function () {
+    popupErrorMessage.classList.remove("popup_type_error-message-active");
+  }, 2500);
+}
+
+profileImage.addEventListener("click", () => {
+  const inputList = Array.from(
+    popupEditProfileImage.querySelectorAll(".popup__input")
   );
+  inputList.forEach((input) => {
+    input.value = "";
+  });
+  clearValidation(editProfileImageForm);
+  openPopup(popupEditProfileImage);
 });
 
 addImageButton.addEventListener("click", () => {
+  const inputList = Array.from(popupAddImage.querySelectorAll(".popup__input"));
+  inputList.forEach((input) => {
+    input.value = "";
+  });
+  clearValidation(newPlaceForm);
   openPopup(popupAddImage);
 });
 
@@ -89,8 +190,41 @@ closePopupButtonList.forEach((item) => {
 editProfileButton.addEventListener("click", () => {
   nameInput.value = profileName.textContent;
   descriptionInput.value = profileDescription.textContent;
+  clearValidation(editProfileForm);
   openPopup(popupEditProfile);
 });
 
-newPlaceForm.addEventListener("submit", addCardSubmit);
-editProfileForm.addEventListener("submit", editProfileSubmit);
+enableValidation();
+
+getKeyData()
+  .then(([userData, cardsDataArr]) => {
+    renderUserInfo(userData);
+
+    editProfileForm.addEventListener("submit", editProfileSubmit);
+
+    editProfileImageForm.addEventListener("submit", editProfileImageSubmit);
+
+    cardsDataArr.forEach((cardInfo) => {
+      cardsContainer.append(
+        cardInit(
+          cardTemplate,
+          cardInfo,
+          openPopupDeleteCardHandler,
+          openImagePopupHandler,
+          cardLike,
+          userData
+        )
+      );
+    });
+
+    newPlaceForm.addEventListener("submit", (evt) => {
+      addCardSubmit(evt, userData);
+    });
+
+    deleteCardForm.addEventListener("submit", (evt) => {
+      deleteCardSubmit(evt, cardIdToDelete, cardElementToDelete);
+    });
+  })
+  .catch((err) => {
+    openPopupErrorMessage(err);
+  });

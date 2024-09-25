@@ -74,13 +74,13 @@ function addCardSubmit(formElement, userData) {
           userData
         )
       );
+      closePopup(popupAddImage);
     })
     .catch((errorMessage) => {
       openPopupErrorMessage(errorMessage);
     })
     .finally(() => {
       popupButtonStateToggle(false, buttonElement);
-      closePopup(popupAddImage);
     });
 
   newPlaceForm.reset();
@@ -106,13 +106,13 @@ function deleteCardSubmit(formElement, cardIdToDelete, cardElementToDelete) {
   cardDeleteRequest(cardIdToDelete)
     .then(() => {
       cardElementToDelete.remove();
+      closePopup(popupCardDelete);
     })
     .catch((err) => {
       openPopupErrorMessage(err);
     })
     .finally(() => {
       popupButtonStateToggle(false, buttonElement);
-      closePopup(popupCardDelete);
     });
 }
 

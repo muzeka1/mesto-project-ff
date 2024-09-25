@@ -10,9 +10,7 @@ const keyData = [getUserData(), getInitialCards()];
 
 function getInitialCards() {
   return fetch(`${config.baseUrl}/cards`, {
-    headers: {
-      authorization: "364ca4dc-eb54-4d9d-8c6a-9a3b62c6df46",
-    },
+    headers: config.headers,
   })
     .then((res) => {
       if (res.ok) {

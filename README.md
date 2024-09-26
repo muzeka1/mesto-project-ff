@@ -1,3 +1,5 @@
+https://github.com/muzeka1/mesto-project-ff.git ссылка проекта на гитхабе
+
 # Mesto
 Проект Mesto - сайт для обмена фотографиями
   
@@ -9,5 +11,5 @@
 Добавить вход по логину и паролю, чтобы иметь свою личную страницу!  
 На данный момент на странице публикуются фотографии всех пользователей
 
-
-https://github.com/muzeka1/mesto-project-ff.git
+## Попробуйте!
+https://muzeka1.github.io/mesto-project-ff/

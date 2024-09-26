@@ -47,24 +47,27 @@ function cardInit(
 
   // Постановка и удаление лайка
   cardLikeButton.addEventListener("click", () => {
-    cardLike(cardLikeButton, cardLikeNumber, cardInfo, ownerInfo);
+    cardLike(cardLikeButton, cardLikeNumber, cardInfo);
   });
 
   return cardElement;
 }
 
-function cardLike(cardLikeButton, cardLikeNumber, cardInfo, ownerInfo) {
-  if (!cardLikeButton.classList.contains("card__like-button_is-active")) {
-    cardPutLikeRequest(cardInfo._id).then((updatedCardInfo) => {
+function cardLike(cardLikeButton, cardLikeNumber, cardInfo) {
+  const likeRequest = cardLikeButton.classList.contains(
+    "card__like-button_is-active"
+  )
+    ? cardRemoveLikeRequest
+    : cardPutLikeRequest;
+
+  likeRequest(cardInfo._id)
+    .then((updatedCardInfo) => {
       cardLikeNumber.textContent = updatedCardInfo.likes.length;
-      cardLikeButton.classList.add("card__like-button_is-active");
+      cardLikeButton.classList.toggle("card__like-button_is-active");
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  } else {
-    cardRemoveLikeRequest(cardInfo._id).then((updatedCardInfo) => {
-      cardLikeNumber.textContent = updatedCardInfo.likes.length;
-      cardLikeButton.classList.remove("card__like-button_is-active");
-    });
-  }
 }
 
 export { cardInit, cardLike };

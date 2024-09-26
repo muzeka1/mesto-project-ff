@@ -13,10 +13,7 @@ function getInitialCards() {
     headers: config.headers,
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Не удалось загрузить карточки: ${res.status}`);
+      return handleRequest(res, 'Не удалось загрузить карточки');
     })
 }
 
@@ -30,11 +27,7 @@ function updateUserInfo(name, about) {
     }),
   })
     .then((res) => {
-      if (res.ok) {
-        return res;
-      }
-
-      return Promise.reject(`Не удалось обновить данные пользователя: ${res.status}`);
+      return handleRequest(res, 'Не удалось обновить данные пользователя');
     })
 }
 
@@ -47,11 +40,7 @@ function updateUserLogoImage(avatarUrl) {
     }),
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-
-      return Promise.reject(`Не удалось обновить аватар пользователя: ${res.status}`);
+      return handleRequest(res, 'Не удалось обновить аватар пользователя');
     })
 }
 
@@ -60,12 +49,8 @@ function getUserData() {
     headers: config.headers,
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-
-      return Promise.reject(`Не удалось получить данные пользователя: ${res.status}`);
-    })
+      return handleRequest(res, 'Не удалось получить данные пользователя');
+    });
 }
 
 function postNewCard(placeName, imageUrl) {
@@ -78,11 +63,7 @@ function postNewCard(placeName, imageUrl) {
     }),
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-
-      return Promise.reject(`Не удалось добавить карточку: ${res.status}`);
+      return handleRequest(res, 'Не удалось добавить карточку');
     })
 }
 
@@ -92,11 +73,7 @@ function cardDeleteRequest(cardId) {
     headers: config.headers,
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-
-      return Promise.reject(`Не удалось удалить карточку: ${res.status}`);
+      return handleRequest(res, 'Не удалось удалить карточку');
     })
 }
 
@@ -106,11 +83,7 @@ function cardPutLikeRequest(cardId) {
     headers: config.headers,
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-
-      return Promise.reject(`Не удалось поставить лайк: ${res.status}`);
+      return handleRequest(res, 'Не удалось поставить лайк');
     })
 }
 
@@ -120,10 +93,7 @@ function cardRemoveLikeRequest(cardId) {
     headers: config.headers,
   })
     .then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Не удалось убрать лайк: ${res.status}`);
+      return handleRequest(res, 'Не удалось убрать лайк');
     })
 }
 
@@ -135,6 +105,14 @@ function getKeyData() {
     .catch((err) => {
       return Promise.reject(err);
     });
+}
+
+function handleRequest(res, errorMessage) {
+  if (res.ok) {
+    return Promise.resolve(res.json());
+  }
+
+  return Promise.reject(`${errorMessage}: ${res.status}`)
 }
 
 export {

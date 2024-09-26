@@ -36,15 +36,24 @@ const popupCardDelete = document.querySelector(".popup_type_card-delete");
 const deleteCardForm = document.forms["delete-card"];
 let cardIdToDelete = "";
 let cardElementToDelete;
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
+
 
 function editProfileSubmit(formElement) {
   formElement.preventDefault();
   const buttonElement = formElement.target.querySelector(".popup__button");
   popupButtonStateToggle(true, buttonElement);
   updateUserInfo(nameInput.value, descriptionInput.value)
-    .then(() => {
-      profileName.textContent = nameInput.value;
-      profileDescription.textContent = descriptionInput.value;
+    .then((updatedUserInfo) => {
+      profileName.textContent = updatedUserInfo.name;
+      profileDescription.textContent = updatedUserInfo.about;
       closePopup(popupEditProfile);
     })
     .catch((errorMessage) => {
@@ -140,11 +149,7 @@ function editProfileImageSubmit(formElement) {
 }
 
 function popupButtonStateToggle(isLoading, popupButton) {
-  if (isLoading) {
-    popupButton.textContent = popupButton.dataset.requestText;
-  } else {
-    popupButton.textContent = popupButton.dataset.defaultText;
-  }
+  popupButton.textContent = isLoading ? popupButton.dataset.requestText : popupButton.dataset.defaultText;
 }
 
 function openPopupErrorMessage(errorMessage) {
@@ -156,22 +161,14 @@ function openPopupErrorMessage(errorMessage) {
 }
 
 profileImage.addEventListener("click", () => {
-  const inputList = Array.from(
-    popupEditProfileImage.querySelectorAll(".popup__input")
-  );
-  inputList.forEach((input) => {
-    input.value = "";
-  });
-  clearValidation(editProfileImageForm);
+  editProfileImageForm.reset();
+  clearValidation(editProfileImageForm, validationConfig);
   openPopup(popupEditProfileImage);
 });
 
 addImageButton.addEventListener("click", () => {
-  const inputList = Array.from(popupAddImage.querySelectorAll(".popup__input"));
-  inputList.forEach((input) => {
-    input.value = "";
-  });
-  clearValidation(newPlaceForm);
+  newPlaceForm.reset();
+  clearValidation(newPlaceForm, validationConfig);
   openPopup(popupAddImage);
 });
 
@@ -190,11 +187,11 @@ closePopupButtonList.forEach((item) => {
 editProfileButton.addEventListener("click", () => {
   nameInput.value = profileName.textContent;
   descriptionInput.value = profileDescription.textContent;
-  clearValidation(editProfileForm);
+  clearValidation(editProfileForm, validationConfig);
   openPopup(popupEditProfile);
 });
 
-enableValidation();
+enableValidation(validationConfig);
 
 getKeyData()
   .then(([userData, cardsDataArr]) => {
@@ -228,4 +225,3 @@ getKeyData()
   .catch((err) => {
     openPopupErrorMessage(err);
   });
-  

@@ -10,6 +10,7 @@
 
 .popup_type_error-message {
     position: fixed;
+    z-index: 20;
     visibility: hidden;
     opacity: 0;
     top: 0;
